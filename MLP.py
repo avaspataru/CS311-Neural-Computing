@@ -37,11 +37,72 @@ def make_model(N_neurons,X,Y):
 
     # Fit the model
     print("Fitting model...")
-    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_squared_error'])
+    sgd = optimizers.SGD(lr=0.1)
+    model.compile(loss='mean_squared_error', optimizer=sgd , metrics=['mean_squared_error'])
     return model
 
+def plot_heatmap(model, name):
+    unitSquareMap = {"x1":[],"x2":[]}
+    # Lower bound of the axes
+    lo = 0
+    # Upper bound of the axes
+    hi = 1
+    # Increase this for higher resolution map. E.g 5 means 5x5 output map
+    ssf = 25
+    # Creates dictionary of grid of float coordinates.
+    for i in range(0,ssf+1):
+        for j in range(0,ssf+1):
+            unitSquareMap["x1"].append((float(hi-lo)/ssf)*i+lo)
+            unitSquareMap["x2"].append((float(hi-lo)/ssf)*j+lo)
+
+    unitSquareMap = pd.DataFrame(data=unitSquareMap)
+    unitSquareMap = unitSquareMap[["x1","x2"]]
+    unitSquareMap = unitSquareMap.values
+
+    out2 = model.predict_proba(unitSquareMap)
+
+    inp = unitSquareMap
+    inp = inp[:,:2]
+
+    # Empty square array
+    outImg = np.empty((ssf+1,ssf+1))
+
+    for i in range(0,(ssf+1)**2):
+        row = inp[i]
+        outImg[int(row[0]*ssf),int(row[1]*ssf)] = out2[i]
+
+    outImg = outImg.T
+    # This is prints in the same layout as the graph
+    # print(np.flip(outImg,axis=0))
+
+    pyplot.clf()
+    img = pyplot.imshow(outImg,cmap="Greys",interpolation='none',extent = [lo,hi,hi,lo])
+    pyplot.xlabel("X1")
+    pyplot.ylabel("X2")
+    # Flip vertically, as the plot plots from the top by default
+    pyplot.gca().invert_yaxis()
+    #pyplot.show()
+    pyplot.savefig("output_"+name+".png")
+    # plt.show()
+    pyplot.close()
+
+
+
+def make_square():
+    vals = []
+    for i in range (0,100):
+        val = (i * 1.0) /100
+        vals.append(val)
+    list_pairs = []
+    for i in vals:
+        for j in vals:
+            list_pairs.append([i,j])
+    X_square = pd.DataFrame(list_pairs, columns = ["x1","x2"])
+    return X_square
+
+
 def main():
-    print("MLP for XOR")
+    print("MLP for XOR!")
 
     #TODO: show actual training set on graph (how much it covers)
     # show how the size of the training set influences results.
@@ -51,14 +112,17 @@ def main():
 
     X_test, Y_test = make_set(64)
 
+    X_square = make_square()
+
     for i in range(0,3):
         for j in range(0,3):
-            N = training_N[i]
+            N = training_N[j]
             N_neurons = neurons[i]
 
             X_train,Y_train = make_set(N)
             model = make_model(N_neurons, X_train, Y_train)
             history = model.fit(X_train, Y_train, epochs=1000, batch_size=1, validation_data=(X_test, Y_test))
+            pyplot.clf()
             pyplot.plot(history.history['mean_squared_error'])
             pyplot.plot(history.history['val_mean_squared_error'])
 
@@ -76,7 +140,11 @@ def main():
             f.close()
 
             print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-            #err = er
+
+            # part 2 of displaying the output
+            plot_heatmap(model, name)
+\
+
 
 
 
