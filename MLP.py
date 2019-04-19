@@ -110,7 +110,7 @@ def main():
     training_N = [4,8,16] #(16,32,64) = (4*4, 4*8, 4*16)
     neurons = [2,4,8]
 
-    X_test, Y_test = make_set(64)
+    X_test, Y_test = make_set(16)
 
     X_square = make_square()
 
@@ -121,7 +121,7 @@ def main():
 
             X_train,Y_train = make_set(N)
             model = make_model(N_neurons, X_train, Y_train)
-            history = model.fit(X_train, Y_train, epochs=1000, batch_size=1, validation_data=(X_test, Y_test))
+            history = model.fit(X_train, Y_train, epochs=5000, batch_size=1, validation_data=(X_test, Y_test))
             pyplot.clf()
             pyplot.plot(history.history['mean_squared_error'])
             pyplot.plot(history.history['val_mean_squared_error'])
@@ -143,7 +143,7 @@ def main():
 
             # part 2 of displaying the output
             plot_heatmap(model, name)
-\
+
 
 
 
