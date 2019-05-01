@@ -10,29 +10,35 @@ from keras import optimizers
 
 def make_set(N):
         df = pd.DataFrame({'x1': [1, 1, 0, 0],'x2': [0, 1, 0, 1],'t': [1, 0, 0, 1]})
-
+        max = 0
         list = []
         for j in range(0,N):
             for i in range(0,4):
                 input = df.iloc[i]
                 noised_x1 = input['x1'] + np.random.normal(scale=0.5)
                 noised_x2 = input['x2'] + np.random.normal(scale=0.5)
-                noised_t =  input['t'] + np.random.normal(scale=0.5)
+                if( abs(input['x1'] - noised_x1) > max):
+                    max = abs(input['x1'] - noised_x1)
+                if( abs(input['x2'] - noised_x2) > max):
+                    max = abs(input['x2'] - noised_x2)
+                #noised_t =  input['t'] + np.random.normal(scale=0.5)
 
-                noised_input = [noised_x1, noised_x2, noised_t]
+                noised_input = [noised_x1, noised_x2, input['t']]
                 list.append(noised_input)
         dataset = pd.DataFrame(list,columns = ["x1","x2","t"])
 
         X = dataset[["x1", "x2"]]
         Y = dataset["t"]
 
+        print(max)
+        
         return X,Y
 
 def make_model(N_neurons,X,Y):
 
     model = Sequential()
-    model.add(Dense(N_neurons, input_dim=2, activation='sigmoid'))
-    model.add(Dense(1, activation="sigmoid"))
+    model.add(Dense(N_neurons, input_dim=2, activation='sigmoid', use_bias=False))
+    model.add(Dense(1, activation="sigmoid", use_bias=False))
 
 
     # Fit the model
@@ -121,7 +127,7 @@ def main():
 
             X_train,Y_train = make_set(N)
             model = make_model(N_neurons, X_train, Y_train)
-            history = model.fit(X_train, Y_train, epochs=5000, batch_size=1, validation_data=(X_test, Y_test))
+            history = model.fit(X_train, Y_train, epochs=1000, batch_size=1, validation_data=(X_test, Y_test))
             pyplot.clf()
             pyplot.plot(history.history['mean_squared_error'])
             pyplot.plot(history.history['val_mean_squared_error'])
