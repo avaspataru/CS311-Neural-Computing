@@ -31,14 +31,14 @@ def make_set(N):
         Y = dataset["t"]
 
         print(max)
-        
+
         return X,Y
 
 def make_model(N_neurons,X,Y):
 
     model = Sequential()
-    model.add(Dense(N_neurons, input_dim=2, activation='sigmoid', use_bias=False))
-    model.add(Dense(1, activation="sigmoid", use_bias=False))
+    model.add(Dense(N_neurons, input_dim=2, activation='sigmoid'))
+    model.add(Dense(1, activation="sigmoid"))
 
 
     # Fit the model
@@ -47,6 +47,7 @@ def make_model(N_neurons,X,Y):
     model.compile(loss='mean_squared_error', optimizer=sgd , metrics=['mean_squared_error'])
     return model
 
+#function plot_heatmap: adaptation from Nicola Branchini
 def plot_heatmap(model, name):
     unitSquareMap = {"x1":[],"x2":[]}
     # Lower bound of the axes
